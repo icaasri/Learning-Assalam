@@ -14,4 +14,9 @@
             Kelola Pengguna
         </a>
     </li>
+    <li>
+        <a href="{{ route('admin.assignments.index') }}" class="block px-4 py-2 rounded hover:bg-gray-700 {{ request()->routeIs('admin.assignments.*') ? 'bg-gray-700' : '' }}">
+            Penugasan
+        </a>
+    </li>
 </ul>
