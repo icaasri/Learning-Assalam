@@ -15,13 +15,14 @@
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">
             <div class="flex">
-                <aside class="w-64 bg-gray-800 text-white min-h-screen p-4">
+                <aside class="w-64 bg-gray-800 text-white min-h-screen p-4 flex flex-col">
                     <div class="mb-8 text-center">
-                        <a href="{{ route('dashboard') }}" class="text-2xl font-bold">
-                            E-Learning Assalaam
+                        <a href="{{ route('dashboard') }}" class="flex flex-col items-center">
+                           <img src="{{ asset('images/smk.png') }}" alt="Logo" class="w-20 h-20 mb-2">
+                           <span class="text-lg font-semibold text-yellow-400">Learning As Salam</span>
                         </a>
                     </div>
-                    <nav>
+                    <nav class="flex-grow">
                         @if(auth()->user()->role === 'admin')
                             @include('layouts.partials.admin-nav')
                         @elseif(auth()->user()->role === 'guru')
