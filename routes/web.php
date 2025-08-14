@@ -56,7 +56,12 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
 Route::middleware(['auth', 'verified', 'role:guru'])->prefix('guru')->name('guru.')->group(function () {
     Route::resource('materials', MaterialController::class);
     Route::resource('quizzes', QuizController::class);
+    
+    // Rute untuk Pertanyaan (CRUD Lengkap)
     Route::post('quizzes/{quiz}/questions', [QuestionController::class, 'store'])->name('quizzes.questions.store');
+    Route::get('questions/{question}/edit', [QuestionController::class, 'edit'])->name('questions.edit');
+    Route::put('questions/{question}', [QuestionController::class, 'update'])->name('questions.update');
+    Route::delete('questions/{question}', [QuestionController::class, 'destroy'])->name('questions.destroy');
 });
 
 // --- GRUP RUTE UNTUK SISWA ---
