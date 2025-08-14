@@ -5,12 +5,15 @@ use App\Http\Controllers\Admin\CourseController as AdminCourseController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\CourseAssignmentController;
+use App\Http\Controllers\Guru\AssignmentController as GuruAssignmentController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\QuestionController;
+use App\Http\Controllers\Siswa\SubmissionController;
 use App\Http\Controllers\TakeQuizController;
 use App\Http\Controllers\StudentMaterialController;
 use App\Http\Controllers\StudentCourseController;
+use App\Http\Controllers\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,9 +26,9 @@ use App\Http\Controllers\StudentCourseController;
 |
 */
 
-// Halaman utama
+// Halaman utama, langsung arahkan ke halaman login
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 // Rute Dashboard utama yang akan mengarahkan pengguna berdasarkan peran
@@ -35,7 +38,7 @@ Route::get('/dashboard', function () {
     if ($user->role === 'admin') {
         return redirect()->route('admin.dashboard');
     } elseif ($user->role === 'guru') {
-        return redirect()->route('guru.materials.index');
+        return redirect()->route('guru.assignments.index'); // Arahkan guru ke daftar tugas
     } else {
         return redirect()->route('siswa.dashboard');
     }
@@ -57,6 +60,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
 Route::middleware(['auth', 'verified', 'role:guru'])->prefix('guru')->name('guru.')->group(function () {
     Route::resource('materials', MaterialController::class);
     Route::resource('quizzes', QuizController::class);
+    Route::resource('assignments', GuruAssignmentController::class);
     
     // Rute untuk Pertanyaan (CRUD Lengkap)
     Route::post('quizzes/{quiz}/questions', [QuestionController::class, 'store'])->name('quizzes.questions.store');
@@ -74,6 +78,14 @@ Route::middleware(['auth', 'verified', 'role:siswa'])->prefix('siswa')->name('si
     Route::get('quizzes/{quiz}', [TakeQuizController::class, 'show'])->name('quizzes.show');
     Route::post('quizzes/{quiz}', [TakeQuizController::class, 'submit'])->name('quizzes.submit');
     Route::get('quizzes/{quiz}/result/{attempt}', [TakeQuizController::class, 'result'])->name('quizzes.result');
+    Route::post('assignments/{assignment}/submit', [SubmissionController::class, 'store'])->name('assignments.submit');
+});
+
+// Rute Profil untuk semua pengguna yang sudah login
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 // Rute autentikasi bawaan dari Laravel Breeze
