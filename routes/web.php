@@ -1,8 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\CourseController as AdminCourseController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\QuizController;
+use App\Http\Controllers\QuestionController;
+use App\Http\Controllers\TakeQuizController;
+use App\Http\Controllers\StudentMaterialController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,36 +20,45 @@ use App\Http\Controllers\QuizController;
 |
 */
 
+// Halaman utama
 Route::get('/', function () {
     return view('welcome');
 });
 
+// Rute Dashboard utama yang akan mengarahkan pengguna berdasarkan peran
 Route::get('/dashboard', function () {
     $user = auth()->user();
+
     if ($user->role === 'admin') {
-        return 'Ini adalah dashboard Admin';
+        return redirect()->route('admin.courses.index');
     } elseif ($user->role === 'guru') {
-        // Arahkan guru ke halaman daftar materi sebagai halaman utama mereka
         return redirect()->route('guru.materials.index');
     } else {
-        return 'Ini adalah dashboard Siswa';
+        return redirect()->route('siswa.dashboard');
     }
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// Grup Rute untuk Admin
+// --- GRUP RUTE UNTUK ADMIN ---
 Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    // Rute untuk fungsionalitas admin akan ditambahkan di sini
+    Route::resource('courses', AdminCourseController::class);
+    Route::resource('users', AdminUserController::class);
 });
 
-// Grup Rute untuk Guru
+// --- GRUP RUTE UNTUK GURU ---
 Route::middleware(['auth', 'verified', 'role:guru'])->prefix('guru')->name('guru.')->group(function () {
     Route::resource('materials', MaterialController::class);
     Route::resource('quizzes', QuizController::class);
+    Route::post('quizzes/{quiz}/questions', [QuestionController::class, 'store'])->name('quizzes.questions.store');
 });
 
-// Grup Rute untuk Siswa
+// --- GRUP RUTE UNTUK SISWA ---
 Route::middleware(['auth', 'verified', 'role:siswa'])->prefix('siswa')->name('siswa.')->group(function () {
-    // Rute untuk fungsionalitas siswa akan ditambahkan di sini
+    Route::get('dashboard', [TakeQuizController::class, 'dashboard'])->name('dashboard');
+    Route::get('materials/{material}', [StudentMaterialController::class, 'show'])->name('materials.show');
+    Route::get('quizzes/{quiz}', [TakeQuizController::class, 'show'])->name('quizzes.show');
+    Route::post('quizzes/{quiz}', [TakeQuizController::class, 'submit'])->name('quizzes.submit');
+    Route::get('quizzes/{quiz}/result/{attempt}', [TakeQuizController::class, 'result'])->name('quizzes.result');
 });
 
+// Rute autentikasi bawaan dari Laravel Breeze
 require __DIR__.'/auth.php';
