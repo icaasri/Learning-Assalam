@@ -3,22 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Material;
-use App\Models\Course; // <-- Tambahkan ini
+use App\Models\Course;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage; // <-- Tambahkan ini
 
 class MaterialController extends Controller
 {
-    public function index()
-    {
-        $materials = Material::latest()->paginate(10);
-        return view('guru.materials.index', compact('materials'));
-    }
-
-    public function create()
-    {
-        $courses = Course::all(); // <-- Ambil semua mata pelajaran
-        return view('guru.materials.create', compact('courses'));
-    }
+    // ... (method index, create, show tidak berubah)
 
     public function store(Request $request)
     {
@@ -27,16 +18,20 @@ class MaterialController extends Controller
             'content' => 'required|string',
             'course_id' => 'required|exists:courses,id',
             'video_url' => 'nullable|url',
+            'file' => 'nullable|file|mimes:pdf,docx,pptx|max:10240', // Validasi file (maks 10MB)
         ]);
 
-        Material::create($request->all());
+        $data = $request->except('file');
+
+        if ($request->hasFile('file')) {
+            // Simpan file ke storage/app/public/materials
+            $filePath = $request->file('file')->store('materials', 'public');
+            $data['file_path'] = $filePath;
+        }
+
+        Material::create($data);
 
         return redirect()->route('guru.materials.index')->with('success', 'Materi berhasil ditambahkan.');
-    }
-
-    public function show(Material $material)
-    {
-        return view('guru.materials.show', compact('material'));
     }
 
     public function edit(Material $material)
@@ -52,15 +47,32 @@ class MaterialController extends Controller
             'content' => 'required|string',
             'course_id' => 'required|exists:courses,id',
             'video_url' => 'nullable|url',
+            'file' => 'nullable|file|mimes:pdf,docx,pptx|max:10240',
         ]);
 
-        $material->update($request->all());
+        $data = $request->except('file');
+
+        if ($request->hasFile('file')) {
+            // Hapus file lama jika ada
+            if ($material->file_path) {
+                Storage::disk('public')->delete($material->file_path);
+            }
+            // Simpan file baru
+            $filePath = $request->file('file')->store('materials', 'public');
+            $data['file_path'] = $filePath;
+        }
+
+        $material->update($data);
 
         return redirect()->route('guru.materials.index')->with('success', 'Materi berhasil diperbarui.');
     }
 
     public function destroy(Material $material)
     {
+        // Hapus file dari storage saat materi dihapus
+        if ($material->file_path) {
+            Storage::disk('public')->delete($material->file_path);
+        }
         $material->delete();
         return redirect()->route('guru.materials.index')->with('success', 'Materi berhasil dihapus.');
     }
