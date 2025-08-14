@@ -1,5 +1,10 @@
 <ul class="space-y-2">
     <li>
+        <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 rounded hover:bg-gray-700 {{ request()->routeIs('admin.dashboard') ? 'bg-gray-700' : '' }}">
+            Dashboard
+        </a>
+    </li>
+    <li>
         <a href="{{ route('admin.courses.index') }}" class="block px-4 py-2 rounded hover:bg-gray-700 {{ request()->routeIs('admin.courses.*') ? 'bg-gray-700' : '' }}">
             Kelola Mata Pelajaran
         </a>
