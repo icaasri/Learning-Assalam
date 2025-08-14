@@ -10,6 +10,7 @@ use App\Http\Controllers\QuizController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\TakeQuizController;
 use App\Http\Controllers\StudentMaterialController;
+use App\Http\Controllers\StudentCourseController;
 
 /*
 |--------------------------------------------------------------------------
@@ -67,6 +68,7 @@ Route::middleware(['auth', 'verified', 'role:guru'])->prefix('guru')->name('guru
 // --- GRUP RUTE UNTUK SISWA ---
 Route::middleware(['auth', 'verified', 'role:siswa'])->prefix('siswa')->name('siswa.')->group(function () {
     Route::get('dashboard', [TakeQuizController::class, 'dashboard'])->name('dashboard');
+    Route::get('courses/{course}', [StudentCourseController::class, 'show'])->name('courses.show');
     Route::get('materials/{material}', [StudentMaterialController::class, 'show'])->name('materials.show');
     Route::post('materials/{material}/complete', [StudentMaterialController::class, 'complete'])->name('materials.complete');
     Route::get('quizzes/{quiz}', [TakeQuizController::class, 'show'])->name('quizzes.show');
